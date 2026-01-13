@@ -5,22 +5,22 @@ cur_dir=$(pwd)
 deb_orig=$(realpath $1)
 deb_orig_dir=${cur_dir}/deb_orig
 
-echo $(basename $(pwd)) | grep -q libfprint-CS9711 || 
+echo $(basename $(pwd)) | grep -q libfprint-CS9711 ||
 { git clone git@github.com:archeYR/libfprint-CS9711.git; cd libfprint-CS9711; }
 
 
 #Before need run:
 sudo apt install ninja-build meson libgusb-dev libgirepository1.0-dev libopencv-dev gtk-doc-tools -y
 rm -rf _build
-meson _build
+meson -Dgtk-examples=true _build
 meson compile -C _build
 
 
 
 rm -rf ${deb_orig_dir}
 
-echo dpkg-deb -R ${deb_orig} ${deb_orig_dir} 
-dpkg-deb -R ${deb_orig} ${deb_orig_dir} 
+echo dpkg-deb -R ${deb_orig} ${deb_orig_dir}
+dpkg-deb -R ${deb_orig} ${deb_orig_dir}
 
 cp _build/libfprint/70-libfprint-2.rules ${deb_orig_dir}/lib/udev/rules.d/70-libfprint-2.rules
 cp data/autosuspend.hwdb ${deb_orig_dir}/lib/udev/hwdb.d/60-autosuspend-libfprint-2.hwdb
@@ -61,4 +61,5 @@ rm new_$(basename ${deb_orig})
 
 dpkg-deb -b ${deb_orig_dir} new_$(basename ${deb_orig})
 
+cp libfprint-CS9711/_build/demo/gtk-libfprint-test .
 rm -rf ${deb_orig_dir} libfprint-CS9711
