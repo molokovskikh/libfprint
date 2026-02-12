@@ -10,12 +10,16 @@ echo $(basename $(pwd)) | grep -q libfprint-CS9711 ||
 
 
 #Before need run:
-sudo apt install ninja-build meson libgusb-dev libgirepository1.0-dev libopencv-dev gtk-doc-tools -y
+sudo apt install ninja-build meson libgusb-dev libgirepository1.0-dev libopencv-dev gtk-doc-tools libgudev-1.0-dev doctest-dev valgrind -y
 rm -rf _build
-meson -Dgtk-examples=true _build
+meson -Dgtk-examples=true _build &&
 meson compile -C _build
 
-
+if [ $? != 0 ]
+then
+echo "COMPILE FATAL"
+exit 1
+fi
 
 rm -rf ${deb_orig_dir}
 
