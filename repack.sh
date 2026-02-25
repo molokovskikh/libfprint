@@ -1,7 +1,18 @@
 #!/bin/bash
 
+download_current()
+{
+ local pkg_name=libfprint-2-2
+ local _current_lib=$(dpkg -l| grep ${pkg_name} | sed -E 's/^([a-zA-A0-9,-:]+\s+){2}([a-zA-A0-9,-:\+~]+)\s+(\w+).*/\2_\3/;s/^[^\:]+\://')
+ deb_name="${pkg_name}_${_current_lib}.deb"
+ wget http://security.ubuntu.com/ubuntu/pool/main/libf/libfprint/${deb_name} && realpath ${deb_name}
+}
+
+[ $# == 0 ] && deb_orig=$(download_current)
 
 cur_dir=$(pwd)
+
+[ $# -gt 0 ] &&
 deb_orig=$(realpath $1)
 deb_orig_dir=${cur_dir}/deb_orig
 
@@ -26,8 +37,8 @@ rm -rf ${deb_orig_dir}
 echo dpkg-deb -R ${deb_orig} ${deb_orig_dir}
 dpkg-deb -R ${deb_orig} ${deb_orig_dir}
 
-cp _build/libfprint/70-libfprint-2.rules ${deb_orig_dir}/lib/udev/rules.d/70-libfprint-2.rules
-cp data/autosuspend.hwdb ${deb_orig_dir}/lib/udev/hwdb.d/60-autosuspend-libfprint-2.hwdb
+cp _build/libfprint/70-libfprint-2.rules ${deb_orig_dir}/usr/lib/udev/rules.d/70-libfprint-2.rules
+cp data/autosuspend.hwdb ${deb_orig_dir}/usr/lib/udev/hwdb.d/60-autosuspend-libfprint-2.hwdb
 cp _build/libfprint/libfprint-2.so.2.0.0 ${deb_orig_dir}/usr/lib/x86_64-linux-gnu/libfprint-2.so.2.0.0
 
 cat<<EOF>${deb_orig_dir}/DEBIAN/postinst
@@ -57,7 +68,7 @@ EOF
 chmod +x ${deb_orig_dir}/DEBIAN/postinst
 
 cd ${deb_orig_dir}
-find lib usr -type f|xargs md5sum > DEBIAN/md5sums
+find usr -type f|xargs md5sum > DEBIAN/md5sums
 
 cd ${cur_dir}
 
